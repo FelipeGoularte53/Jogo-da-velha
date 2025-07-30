@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jogo da Velha</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+
     <style>
-        /* CSS - Estilização e Responsividade */
+        /* CSS (Nenhuma mudança aqui) */
         :root {
             --cell-size: 100px;
             --mark-size: calc(var(--cell-size) * .9);
-            --cor-x: #e74c3c;
-            /* Vermelho */
-            --cor-o: #3498db;
-            /* Azul */
+            --cor-x: #e74c3c; /* Vermelho */
+            --cor-o: #3498db; /* Azul */
         }
 
         body {
             margin: 0;
             padding: 20px;
             background-color: #f7f7f7;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -30,10 +32,52 @@
         }
 
         h1 {
-            font-size: 2.5rem;
-            color: #333;
+            font-family: 'Fredoka One', cursive;
+            font-size: 3.5rem;
             margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--cor-x), var(--cor-o));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.1);
         }
+
+        #scoreboard {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .score-card {
+            background-color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+
+        .score-card span:first-child {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .score-card span:last-child {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        #player-x .score-value { color: var(--cor-x); }
+        #player-o .score-value { color: var(--cor-o); }
+
+        .score-card.active-turn { transform: translateY(-5px); }
+        #player-x.active-turn { box-shadow: 0 0 20px var(--cor-x); }
+        #player-o.active-turn { box-shadow: 0 0 20px var(--cor-o); }
 
         .board {
             display: grid;
@@ -43,7 +87,7 @@
             background-color: #333;
             border-radius: 10px;
             padding: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
         .cell {
@@ -57,127 +101,75 @@
             position: relative;
             cursor: pointer;
             transition: background-color 0.2s ease-in-out;
-            /* Adiciona transição suave */
         }
 
-        /* Efeito de hover para células vazias */
-        .cell:not(.x):not(.circle):hover {
-            background-color: #f0f0f0;
-        }
+        .cell:not(.x):not(.circle):hover { background-color: #f0f0f0; }
+        .cell.x, .cell.circle { cursor: not-allowed; }
 
-        .cell.x,
-        .cell.circle {
-            cursor: not-allowed;
+        .cell.x::before, .cell.x::after {
+            content: ''; position: absolute; width: calc(var(--mark-size) * .15); height: var(--mark-size);
+            background-color: var(--cor-x); border-radius: 5px;
         }
+        .cell.x::before { transform: rotate(45deg); }
+        .cell.x::after { transform: rotate(-45deg); }
 
-        /* Estilo do X (vermelho) */
-        .cell.x::before,
-        .cell.x::after {
-            content: '';
-            position: absolute;
-            width: calc(var(--mark-size) * .15);
-            height: var(--mark-size);
-            background-color: var(--cor-x);
-            border-radius: 5px;
-        }
-
-        .cell.x::before {
-            transform: rotate(45deg);
-        }
-
-        .cell.x::after {
-            transform: rotate(-45deg);
-        }
-
-        /* Estilo do Círculo (azul) */
         .cell.circle::before {
-            content: '';
-            position: absolute;
-            width: calc(var(--mark-size) * .8);
-            height: calc(var(--mark-size) * .8);
-            background-color: transparent;
-            border: calc(var(--mark-size) * .15) solid var(--cor-o);
-            border-radius: 50%;
+            content: ''; position: absolute; width: calc(var(--mark-size) * .8); height: calc(var(--mark-size) * .8);
+            background-color: transparent; border: calc(var(--mark-size) * .15) solid var(--cor-o); border-radius: 50%;
         }
 
         .winning-message {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, .9);
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 5rem;
-            flex-direction: column;
-            gap: 20px;
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, .9); justify-content: center; align-items: center;
+            color: white; font-size: 5rem; flex-direction: column; gap: 20px;
         }
-
         .winning-message button {
-            font-size: 3rem;
-            background-color: white;
-            border: 1px solid black;
-            padding: .25em .5em;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.2s, color 0.2s;
+            font-size: 3rem; background-color: white; border: 1px solid black; padding: .25em .5em;
+            cursor: pointer; border-radius: 5px; transition: background-color 0.2s, color 0.2s;
         }
+        .winning-message button:hover { background-color: #333; color: white; }
+        .winning-message.show { display: flex; }
 
-        .winning-message button:hover {
-            background-color: #333;
-            color: white;
-        }
-
-        .winning-message.show {
-            display: flex;
-        }
-
-        /* Responsividade para telas menores */
-        @media (max-width: 420px) {
-            :root {
-                --cell-size: 80px;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .winning-message {
-                font-size: 3rem;
-            }
-
-            .winning-message button {
-                font-size: 2rem;
-            }
+        @media (max-width: 480px) {
+            :root { --cell-size: 80px; }
+            h1 { font-size: 2.8rem; }
+            .score-card { width: 90px; padding: 10px 20px; }
+            .score-card span:last-child { font-size: 2rem; }
+            .winning-message { font-size: 3rem; }
+            .winning-message button { font-size: 2rem; }
         }
     </style>
 </head>
-
 <body>
 
-    <!-- HTML - Estrutura do Jogo -->
+    <!-- HTML -->
     <h1>Jogo da Velha</h1>
-    <div id="board" class="board">
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
+
+    <div id="scoreboard">
+        <div id="player-x" class="score-card">
+            <span>Jogador X</span>
+            <span id="score-x" class="score-value">0</span>
+        </div>
+        <div id="player-o" class="score-card">
+            <span>Jogador O</span>
+            <span id="score-circle" class="score-value">0</span>
+        </div>
     </div>
+
+    <!-- LINHA CORRIGIDA ABAIXO -->
+    <div id="board" class="board">
+        <div class="cell" data-cell></div><div class="cell" data-cell></div><div class="cell" data-cell></div>
+        <div class="cell" data-cell></div><div class="cell" data-cell></div><div class="cell" data-cell></div>
+        <div class="cell" data-cell></div><div class="cell" data-cell></div><div class="cell" data-cell></div>
+    </div>
+
     <div class="winning-message" id="winningMessage">
         <div data-winning-message-text></div>
-        <button id="restartButton">Reiniciar</button>
+        <button id="restartButton">Continuar</button>
     </div>
 
     <script>
-        // JavaScript - Lógica do Jogo
+        // JavaScript (Nenhuma mudança aqui)
         const cellElements = document.querySelectorAll('[data-cell]');
         const board = document.getElementById('board');
         const winningMessageElement = document.getElementById('winningMessage');
@@ -187,10 +179,17 @@
         const CIRCLE_CLASS = 'circle';
         let circleTurn;
 
+        const scoreXElement = document.getElementById('score-x');
+        const scoreCircleElement = document.getElementById('score-circle');
+        const playerXCard = document.getElementById('player-x');
+        const playerOCard = document.getElementById('player-o');
+        let scoreX = 0;
+        let scoreCircle = 0;
+
         const WINNING_COMBINATIONS = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8],
-            [0, 3, 6], [1, 4, 7], [2, 5, 8],
-            [0, 4, 8], [2, 4, 6]
+          [0, 1, 2], [3, 4, 5], [6, 7, 8],
+          [0, 3, 6], [1, 4, 7], [2, 5, 8],
+          [0, 4, 8], [2, 4, 6]
         ];
 
         startGame();
@@ -198,65 +197,85 @@
         restartButton.addEventListener('click', startGame);
 
         function startGame() {
-            circleTurn = false;
-            cellElements.forEach(cell => {
-                cell.classList.remove(X_CLASS);
-                cell.classList.remove(CIRCLE_CLASS);
-                cell.removeEventListener('click', handleClick);
-                cell.addEventListener('click', handleClick, { once: true });
-            });
-            winningMessageElement.classList.remove('show');
+          circleTurn = false;
+          cellElements.forEach(cell => {
+            cell.classList.remove(X_CLASS, CIRCLE_CLASS);
+            cell.removeEventListener('click', handleClick);
+            cell.addEventListener('click', handleClick, { once: true });
+          });
+          winningMessageElement.classList.remove('show');
+          updateTurnIndicator();
         }
 
         function handleClick(e) {
-            const cell = e.target;
-            const currentClass = circleTurn ? CIRCLE_CLASS : X_CLASS;
-            placeMark(cell, currentClass);
+          const cell = e.target;
+          const currentClass = circleTurn ? CIRCLE_CLASS : X_CLASS;
+          placeMark(cell, currentClass);
 
-            if (checkWin(currentClass)) {
-                endGame(false);
-            } else if (isDraw()) {
-                endGame(true);
-            } else {
-                swapTurns();
-            }
+          if (checkWin(currentClass)) {
+            endGame(false);
+          } else if (isDraw()) {
+            endGame(true);
+          } else {
+            swapTurns();
+            updateTurnIndicator();
+          }
         }
 
         function endGame(draw) {
-            const winnerColor = circleTurn ? 'var(--cor-o)' : 'var(--cor-x)';
-            if (draw) {
-                winningMessageTextElement.innerText = 'Empate!';
-                winningMessageTextElement.style.color = 'white';
+          if (draw) {
+            winningMessageTextElement.innerText = 'Empate!';
+            winningMessageTextElement.style.color = 'white';
+          } else {
+            if (circleTurn) {
+                scoreCircle++;
+                winningMessageTextElement.innerText = "Círculo Venceu!";
             } else {
-                winningMessageTextElement.innerText = `${circleTurn ? "Círculo" : "X"} Venceu!`;
-                winningMessageTextElement.style.color = winnerColor;
+                scoreX++;
+                winningMessageTextElement.innerText = "X Venceu!";
             }
-            winningMessageElement.classList.add('show');
+            updateScoreboard();
+            const winnerColor = circleTurn ? 'var(--cor-o)' : 'var(--cor-x)';
+            winningMessageTextElement.style.color = winnerColor;
+          }
+          playerXCard.classList.remove('active-turn');
+          playerOCard.classList.remove('active-turn');
+          winningMessageElement.classList.add('show');
+        }
+
+        function updateScoreboard() {
+            scoreXElement.innerText = scoreX;
+            scoreCircleElement.innerText = scoreCircle;
+        }
+        
+        function updateTurnIndicator() {
+            playerXCard.classList.remove('active-turn');
+            playerOCard.classList.remove('active-turn');
+            if (circleTurn) {
+                playerOCard.classList.add('active-turn');
+            } else {
+                playerXCard.classList.add('active-turn');
+            }
         }
 
         function isDraw() {
-            return [...cellElements].every(cell => {
-                return cell.classList.contains(X_CLASS) || cell.classList.contains(CIRCLE_CLASS);
-            });
+          return [...cellElements].every(cell => cell.classList.contains(X_CLASS) || cell.classList.contains(CIRCLE_CLASS));
         }
 
         function placeMark(cell, currentClass) {
-            cell.classList.add(currentClass);
+          cell.classList.add(currentClass);
         }
 
         function swapTurns() {
-            circleTurn = !circleTurn;
+          circleTurn = !circleTurn;
         }
 
         function checkWin(currentClass) {
-            return WINNING_COMBINATIONS.some(combination => {
-                return combination.every(index => {
-                    return cellElements[index].classList.contains(currentClass);
-                });
-            });
+          return WINNING_COMBINATIONS.some(combination => {
+            return combination.every(index => cellElements[index].classList.contains(currentClass));
+          });
         }
     </script>
 
 </body>
-
 </html>
