@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
 
     <style>
-        /* CSS ATUALIZADO E SIMPLIFICADO */
+        /* CSS ATUALIZADO */
         :root {
             --cell-size: 100px;
             --mark-size: calc(var(--cell-size) * .9);
@@ -28,22 +28,19 @@
             padding: 20px;
             background-color: #f7f7f7;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Flexbox para alinhar tudo em uma coluna, centralizado */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             text-align: center;
-            gap: 30px;
-            /* Espaçamento entre título, placar e tabuleiro */
+            transition: all 0.3s ease;
         }
 
         h1 {
             font-family: 'Fredoka One', cursive;
             font-size: 3.5rem;
-            /* Removido margin-bottom para usar o 'gap' do body */
-            margin: 0;
+            margin-bottom: 20px;
             background: linear-gradient(45deg, var(--cor-x), var(--cor-o));
             -webkit-background-clip: text;
             background-clip: text;
@@ -51,9 +48,16 @@
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
         }
 
+        /* Layout Padrão (Mobile First): Empilhado */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
         #scoreboard {
             display: flex;
-            /* flex-wrap permite que os itens quebrem a linha em telas muito pequenas */
             flex-wrap: wrap;
             justify-content: center;
             gap: 20px;
@@ -203,26 +207,41 @@
             display: flex;
         }
 
-        /* --- CSS RESPONSIVO --- */
-        /* Para telas menores, como celulares */
-        @media (max-width: 600px) {
-            :root {
-                /* Unidade 'vw' faz o tabuleiro se ajustar à largura da tela */
-                --cell-size: 25vw;
+        /* --- CSS RESPONSIVO CORRIGIDO --- */
+
+        /* 1. Layout para Telas Grandes (Desktops e Tablets deitados) */
+        /* Ativado quando a largura for 800px ou mais */
+        @media (min-width: 800px) {
+            .game-container {
+                flex-direction: row;
+                /* Alinha placar e tabuleiro lado a lado */
+                align-items: flex-start;
+                /* Alinha no topo */
+                gap: 50px;
             }
 
-            body {
-                gap: 20px;
-                /* Diminui o espaçamento geral */
-                padding: 10px;
+            #scoreboard {
+                flex-direction: column;
+                /* Empilha os cartões de pontuação verticalmente */
+                gap: 25px;
+                margin-top: 15px;
+                /* Alinha melhor com o tabuleiro */
+            }
+        }
+
+        /* 2. Layout para Telas Pequenas (Celulares em pé) */
+        @media (max-width: 799px) {
+            :root {
+                --cell-size: 24vw;
+                /* Usa a largura da tela como base */
             }
 
             h1 {
-                font-size: 2.5rem;
+                font-size: 2.8rem;
             }
 
             .score-card {
-                width: 90px;
+                width: 100px;
                 padding: 10px 15px;
             }
 
@@ -238,39 +257,75 @@
                 font-size: 2rem;
             }
         }
+
+        /* 3. Caso especial: Celulares deitados (largos e baixos) */
+        @media (max-height: 450px) and (min-width: 500px) {
+            :root {
+                --cell-size: 18vh;
+                /* Usa a altura da tela como base */
+            }
+
+            .game-container {
+                flex-direction: row;
+                gap: 25px;
+            }
+
+            #scoreboard {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .score-card {
+                width: 120px;
+                padding: 5px 10px;
+            }
+
+            .score-card span:first-child {
+                font-size: 0.8rem;
+            }
+
+            .score-card span:last-child {
+                font-size: 1.8rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 10px;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <!-- HTML SIMPLIFICADO: removi o 'game-container' desnecessário -->
 
     <h1>Jogo da Velha</h1>
 
-    <div id="scoreboard">
-        <div id="player-x" class="score-card">
-            <span>Jogador X</span>
-            <span id="score-x" class="score-value">0</span>
+    <div class="game-container">
+        <div id="scoreboard">
+            <div id="player-x" class="score-card">
+                <span>Jogador X</span>
+                <span id="score-x" class="score-value">0</span>
+            </div>
+            <div id="draws" class="score-card">
+                <span>Empates</span>
+                <span id="score-draw" class="score-value">0</span>
+            </div>
+            <div id="player-o" class="score-card">
+                <span>Jogador O</span>
+                <span id="score-circle" class="score-value">0</span>
+            </div>
         </div>
-        <div id="draws" class="score-card">
-            <span>Empates</span>
-            <span id="score-draw" class="score-value">0</span>
+        <div id="board" class="board">
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
+            <div class="cell" data-cell></div>
         </div>
-        <div id="player-o" class="score-card">
-            <span>Jogador O</span>
-            <span id="score-circle" class="score-value">0</span>
-        </div>
-    </div>
-
-    <div id="board" class="board">
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
-        <div class="cell" data-cell></div>
     </div>
 
     <div class="winning-message" id="winningMessage">
