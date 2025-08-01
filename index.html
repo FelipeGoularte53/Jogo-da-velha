@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
 
     <style>
-        /* CSS */
+        /* CSS ATUALIZADO E SIMPLIFICADO */
         :root {
             --cell-size: 100px;
             --mark-size: calc(var(--cell-size) * .9);
@@ -28,18 +28,22 @@
             padding: 20px;
             background-color: #f7f7f7;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Flexbox para alinhar tudo em uma coluna, centralizado */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             text-align: center;
+            gap: 30px;
+            /* Espaçamento entre título, placar e tabuleiro */
         }
 
         h1 {
             font-family: 'Fredoka One', cursive;
             font-size: 3.5rem;
-            margin-bottom: 20px;
+            /* Removido margin-bottom para usar o 'gap' do body */
+            margin: 0;
             background: linear-gradient(45deg, var(--cor-x), var(--cor-o));
             -webkit-background-clip: text;
             background-clip: text;
@@ -49,11 +53,10 @@
 
         #scoreboard {
             display: flex;
+            /* flex-wrap permite que os itens quebrem a linha em telas muito pequenas */
             flex-wrap: wrap;
-            /* Permite que os itens quebrem para a próxima linha em telas pequenas */
             justify-content: center;
             gap: 20px;
-            margin-bottom: 30px;
         }
 
         .score-card {
@@ -88,7 +91,6 @@
             color: var(--cor-o);
         }
 
-        /* NOVA REGRA DE ESTILO PARA O CONTADOR DE EMPATE */
         #draws .score-value {
             color: var(--cor-empate);
         }
@@ -201,18 +203,27 @@
             display: flex;
         }
 
-        @media (max-width: 480px) {
+        /* --- CSS RESPONSIVO --- */
+        /* Para telas menores, como celulares */
+        @media (max-width: 600px) {
             :root {
-                --cell-size: 80px;
+                /* Unidade 'vw' faz o tabuleiro se ajustar à largura da tela */
+                --cell-size: 25vw;
+            }
+
+            body {
+                gap: 20px;
+                /* Diminui o espaçamento geral */
+                padding: 10px;
             }
 
             h1 {
-                font-size: 2.8rem;
+                font-size: 2.5rem;
             }
 
             .score-card {
                 width: 90px;
-                padding: 10px 20px;
+                padding: 10px 15px;
             }
 
             .score-card span:last-child {
@@ -231,8 +242,8 @@
 </head>
 
 <body>
+    <!-- HTML SIMPLIFICADO: removi o 'game-container' desnecessário -->
 
-    <!-- HTML -->
     <h1>Jogo da Velha</h1>
 
     <div id="scoreboard">
@@ -240,7 +251,6 @@
             <span>Jogador X</span>
             <span id="score-x" class="score-value">0</span>
         </div>
-        <!-- NOVO BLOCO HTML PARA O CONTADOR DE EMPATE -->
         <div id="draws" class="score-card">
             <span>Empates</span>
             <span id="score-draw" class="score-value">0</span>
@@ -269,7 +279,7 @@
     </div>
 
     <script>
-        // JavaScript
+        // O JavaScript continua o mesmo, não precisa mudar.
         const cellElements = document.querySelectorAll('[data-cell]');
         const board = document.getElementById('board');
         const winningMessageElement = document.getElementById('winningMessage');
@@ -278,29 +288,21 @@
         const X_CLASS = 'x';
         const CIRCLE_CLASS = 'circle';
         let circleTurn;
-
         const scoreXElement = document.getElementById('score-x');
         const scoreCircleElement = document.getElementById('score-circle');
-        // NOVA CONSTANTE PARA O ELEMENTO DE PONTUAÇÃO DE EMPATE
         const scoreDrawElement = document.getElementById('score-draw');
         const playerXCard = document.getElementById('player-x');
         const playerOCard = document.getElementById('player-o');
-
         let scoreX = 0;
         let scoreCircle = 0;
-        // NOVA VARIÁVEL PARA A PONTUAÇÃO DE EMPATE
         let scoreDraw = 0;
-
         const WINNING_COMBINATIONS = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8],
             [0, 3, 6], [1, 4, 7], [2, 5, 8],
             [0, 4, 8], [2, 4, 6]
         ];
-
         startGame();
-
         restartButton.addEventListener('click', startGame);
-
         function startGame() {
             circleTurn = false;
             cellElements.forEach(cell => {
@@ -311,12 +313,10 @@
             winningMessageElement.classList.remove('show');
             updateTurnIndicator();
         }
-
         function handleClick(e) {
             const cell = e.target;
             const currentClass = circleTurn ? CIRCLE_CLASS : X_CLASS;
             placeMark(cell, currentClass);
-
             if (checkWin(currentClass)) {
                 endGame(false);
             } else if (isDraw()) {
@@ -326,10 +326,8 @@
                 updateTurnIndicator();
             }
         }
-
         function endGame(draw) {
             if (draw) {
-                // INCREMENTA A PONTUAÇÃO DE EMPATE
                 scoreDraw++;
                 winningMessageTextElement.innerText = 'Empate!';
                 winningMessageTextElement.style.color = 'white';
@@ -344,20 +342,16 @@
                 const winnerColor = circleTurn ? 'var(--cor-o)' : 'var(--cor-x)';
                 winningMessageTextElement.style.color = winnerColor;
             }
-            // ATUALIZA O PLACAR APÓS VITÓRIA OU EMPATE
             updateScoreboard();
             playerXCard.classList.remove('active-turn');
             playerOCard.classList.remove('active-turn');
             winningMessageElement.classList.add('show');
         }
-
         function updateScoreboard() {
             scoreXElement.innerText = scoreX;
             scoreCircleElement.innerText = scoreCircle;
-            // ATUALIZA O TEXTO DO PLACAR DE EMPATE
             scoreDrawElement.innerText = scoreDraw;
         }
-
         function updateTurnIndicator() {
             playerXCard.classList.remove('active-turn');
             playerOCard.classList.remove('active-turn');
@@ -367,19 +361,15 @@
                 playerXCard.classList.add('active-turn');
             }
         }
-
         function isDraw() {
             return [...cellElements].every(cell => cell.classList.contains(X_CLASS) || cell.classList.contains(CIRCLE_CLASS));
         }
-
         function placeMark(cell, currentClass) {
             cell.classList.add(currentClass);
         }
-
         function swapTurns() {
             circleTurn = !circleTurn;
         }
-
         function checkWin(currentClass) {
             return WINNING_COMBINATIONS.some(combination => {
                 return combination.every(index => cellElements[index].classList.contains(currentClass));
